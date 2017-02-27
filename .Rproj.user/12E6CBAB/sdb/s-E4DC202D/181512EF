@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "#libraries\nlibrary(dplyr)\nlibrary(ggplot2)\n\n#Read and observe data\n# accident <- read.csv(\"data/original/accident.csv\")\n# str(accident)\n\n#columns to keep\ndat <- select(accident, ST_CASE, COUNTY, DAY, MONTH, YEAR, DAY_WEEK,\n              ROUTE, HOUR, MINUTE, LATITUDE, LONGITUD, WEATHER, FATALS, DRUNK_DR)\n\nstr(dat)\n\n\n#Get rid of uknown or missing values\n#Ref https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/812315\n\ndat <- subset(dat, !(COUNTY == 000 | COUNTY == 997 | COUNTY == 998 | COUNTY == 999))\ndat <- subset(dat, !(DAY == \"--\"))\ndat <- subset(dat, !(MONTH == \"--\"))\ndat <- subset(dat, !(YEAR == \"--\" | YEAR == 99))\ndat <- subset(dat, !(DAY_WEEK == \"--\"))\ndat <- subset(dat, !(HOUR == \"--\" | HOUR == 99))\ndat <- subset(dat, !(MINUTE == \"--\" | MINUTE == 99))\ndat <- subset(dat, !(LATITUDE == 77.7777 | LATITUDE == 88.8888 | LATITUDE == 99.9999))\ndat <- subset(dat, !(LONGITUD == 77.7777 | LONGITUD == 88.8888 | LONGITUD == 99.9999))\ndat <- subset(dat, !(WEATHER == 98 | WEATHER == 99))\n\nstr(dat)\n\n#get a full date column\ndat <- mutate(dat, DATE = paste(YEAR, MONTH, DAY, sep = '/')) %>%\n  select(-DAY, -MONTH, -YEAR) \n\ndat$DATE <- as.Date(dat$DATE)\n\nstr(dat)\n\n# some basic stats\nsummary(dat$FATALS)\n\n#summarizing by total fatalities and total drunk incidents, and its ratio\ntotals <- summarise(dat,\n                    totFat = sum(FATALS),\n                    totDrunk = sum(DRUNK_DR),\n                    ratio = totDrunk/totFat)\ntotals\n\n#plotting accidents by date (must group since any day has multiple accidents)\n\ngroup <- group_by(dat, DATE)\naccidentsByDate <- summarise(group, FATALS = n())\nhead(accidentsByDate)\n\nplot1 <- ggplot(accidentsByDate, aes(DATE, FATALS)) +\n  geom_point(color = 'firebrick') +\n  labs(x = \"Date\", y = \"Number of Fatalities\") +\n  geom_smooth()\nplot1\n\n\nplot2 <- ggplot(dat, aes(x = DATE, fill = ROUTE)) +\n  geom_histogram(binwidth = 1) + facet_grid(ROUTE~.)\nplot2\n\n\n# write.csv(dat, file = \"fars.csv\", row.names = F)",
+    "created" : 1488148855397.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "815253400",
+    "id" : "181512EF",
+    "lastKnownWriteTime" : 1488224077,
+    "last_content_update" : 1488224077870,
+    "path" : "~/Documents/IDV/2 Winter 2017/ARTG 5120 Design Research Methods/farsRM/main.R",
+    "project_path" : "main.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
